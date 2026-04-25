@@ -138,7 +138,7 @@ const cx=cv.getContext('2d');
 // ═══════════════════════════════
 const G={
   storageKey:'orderCrazyProgressV1',
-  lv:1, bots:[], mv:0, sel:null, hist:[], won:false, busy:false,
+  lv:1, bots:[], mv:0, sel:null, hist:[], won:false, busy:false, undosLeft:5, _entering:false,
   rects:[], orders:[], doneC:new Set(), pendingC:{}, best:{}, maxLv:1,
   BW:44,BH:110,capH:13,lH:0,
   flyBots:[], pourAnim:null, pouringFrom:null,
@@ -296,10 +296,44 @@ const G={
     this.mv=0;this.sel=null;this.won=false;this.busy=false;
     this.hist=[];this.flyBots=[];this.pourAnim=null;this.pouringFrom=null;this.particles=[];this.ripples=[];this.hover=-1;this.pendingC={};
     this._prevOrders=[];this._prevDone=new Set();
-    this.layout();this.ui();this.hideWin();
+    this.undosLeft=5;
+    this.layout();
+    if(this._entering){this._entering=false;this._animEnter();}
+    this.ui();this.hideWin();
   },
 
-  next(){this.lv++;this.maxLv=Math.max(this.maxLv,this.lv);this.saveProgress();this.restart()},
+  next(){
+    this.lv++;this.maxLv=Math.max(this.maxLv,this.lv);this.saveProgress();
+    this.transitionOut(()=>{this._entering=true;this.restart()});
+  },
+
+  // Fly all current bottles off screen, then call cb
+  transitionOut(cb){
+    if(!this.rects.length){cb();return}
+    tweens.length=0;
+    this.busy=true;
+    let done=0;
+    const active=this.rects.filter((_,i)=>this.bots[i]!==null&&this.bots[i]!==undefined);
+    const total=active.length||1;
+    for(let i=0;i<this.rects.length;i++){
+      const r=this.rects[i];
+      const targetY=r.y+this.ch*0.7+Math.random()*this.BH*2;
+      addTween(r,{y:targetY,scl:0.35,alpha:0},0.26+Math.random()*0.1,Ease.inBack,null,()=>{
+        done++;if(done>=total)cb();
+      });
+    }
+  },
+  // Animate new bottles flying up into position
+  _animEnter(){
+    for(let i=0;i<this.rects.length;i++){
+      const r=this.rects[i];
+      const ty=r.y;
+      r.y=ty+this.ch*0.55+Math.random()*this.BH;
+      r.alpha=0;r.scl=0.5;
+      const delay=i*16;
+      setTimeout(()=>addTween(r,{y:ty,alpha:1,scl:1},0.42,Ease.outBack),delay);
+    }
+  },
 
   isSrt(b){return !!b&&b.length===CAP&&b.every(c=>c===b[0])},
   isDone(){return this.bots.every(b=>b===null||b.length===0)},
@@ -513,12 +547,13 @@ const G={
   },
 
   undo(){
-    if(!this.hist.length||this.busy||this.won)return;
+    if(!this.hist.length||this.busy||this.won||this.undosLeft<=0)return;
     tweens.length=0;
     const snap=this.hist.pop();
     this.bots=snap.bots;
     this.doneC=new Set(snap.doneC);
     this.pendingC=snap.pendingC??{};
+    this.undosLeft--;
     this.mv--;this.sel=null;this.pouringFrom=null;
     this.layout();this.ui();
   },
@@ -625,8 +660,8 @@ const G={
         cx.shadowBlur=6;
       }
       const pcx=r.x+r.w/2, pcy=r.y+r.h;
-      cx.translate(pcx+r.offX,pcy+r.offY);
-      cx.rotate(r.rot);
+      cx.translate(pcx+r.offX,pcy+r.offY+(r.idleY||0));
+      cx.rotate(r.rot+(r.idleRot||0));
       cx.scale(r.scl,r.scl);
       cx.translate(-pcx,-pcy);
       this.drawBot(r.x,r.y,r.w,r.h,layers,isSel,isSrt,isHover,i);
@@ -1090,7 +1125,10 @@ const G={
     document.getElementById('slv').textContent=this.lv;
     document.getElementById('smv').textContent=this.mv;
     document.getElementById('sbt').textContent=this.best[this.lv]||'-';
-    document.getElementById('ubtn').className=`btn ${this.hist.length?'':'dis'}`;
+    const canUndo=this.hist.length>0&&this.undosLeft>0;
+    const ubtn=document.getElementById('ubtn');
+    ubtn.className=`btn ${canUndo?'':'dis'}`;
+    ubtn.textContent=`↩ ${this.undosLeft}`;
     this.upOrders();
   },
   showLevels(){
@@ -1129,7 +1167,8 @@ const G={
     if(lv<1||lv>this.maxLv||this.busy)return;
     this.lv=lv;
     this.saveProgress();
-    this.restart();
+    this.hideWin();
+    this.transitionOut(()=>{this._entering=true;this.restart()});
   },
   _prevOrders:[],
   _prevDone:new Set(),
@@ -1176,7 +1215,9 @@ const G={
   showWin(){
     const b=this.best[this.lv];if(!b||this.mv<b)this.best[this.lv]=this.mv;this.maxLv=Math.max(this.maxLv,this.lv+1);this.saveProgress();this.ui();
     document.body.style.overflow='hidden';
-    document.getElementById('wc').innerHTML=`<div class="wov" role="dialog" aria-modal="true"><h2>🎉 Level ${this.lv} Done!</h2><p>${this.mv} moves${this.best[this.lv]===this.mv?' — New best!':''}</p><div style="display:flex;gap:10px"><button class="btn" onclick="G.restart()">↻ Replay</button><button class="btn pri" onclick="G.next();G.hideWin()">Level ${this.lv+1} →</button></div></div>`;
+    const kiranaLines=['This one\'s for you, Kirana 🧡','Kirana would be proud 🧡','abang loves you, Kirana 🧡','for Kirana, with love 🧡'];
+    const extra=Math.random()<0.35?`<p style="font-size:11px;opacity:.55;margin-top:6px">${kiranaLines[0|Math.random()*kiranaLines.length]}</p>`:'';
+    document.getElementById('wc').innerHTML=`<div class="wov" role="dialog" aria-modal="true"><h2>🎉 Level ${this.lv} Done!</h2><p>${this.mv} moves${this.best[this.lv]===this.mv?' — New best!':''}</p>${extra}<div style="display:flex;gap:10px;margin-top:12px"><button class="btn" onclick="G.restart()">↻ Replay</button><button class="btn pri" onclick="G.next();G.hideWin()">Level ${this.lv+1} →</button></div></div>`;
     const ct=document.getElementById('cc');
     for(let i=0;i<30;i++){const el=document.createElement('div');el.className='cfp';const sz=5+Math.random()*8;el.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${C[i%C.length].f};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.3+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s`;ct.appendChild(el)}
   },
@@ -1192,6 +1233,15 @@ const G={
     if(this.sel!==null&&!this.busy){
       const r=this.rects[this.sel];
       if(r){r.offY=-10+Math.sin(t/180)*2.2;r.scl=1.035+Math.sin(t/220)*.006}
+    }
+    // Idle sway for all other bottles
+    if(!this.busy&&!this.won){
+      for(let i=0;i<this.rects.length;i++){
+        if(i===this.sel)continue;
+        const r=this.rects[i];
+        r.idleY=Math.sin(t/1400+i*0.85)*1.8;
+        r.idleRot=Math.sin(t/1900+i*1.2)*0.011;
+      }
     }
 
     this.draw();
