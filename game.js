@@ -273,6 +273,7 @@ const G={
   startLoop(){
     if(!this._paused)return;
     this._paused=false;
+    this.resize();
     this._lt=performance.now();
     requestAnimationFrame(t=>this.loop(t));
   },
