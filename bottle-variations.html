@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order Crazy Bottle Variations</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;600;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:linear-gradient(180deg,#10101b 0%,#08080f 58%,#050509 100%);color:#fff;font-family:'Outfit',sans-serif}
+body{padding:24px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-family:'Fredoka',sans-serif;font-size:34px;color:#ffd23f;margin-bottom:4px}
+p{color:rgba(255,255,255,.48);font-size:14px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border-radius:10px;padding:14px;box-shadow:0 18px 34px rgba(0,0,0,.18)}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.name{font-weight:800;color:#fff}
+.tag{font-size:11px;color:rgba(255,255,255,.36);text-transform:uppercase;letter-spacing:1px}
+canvas{display:block;width:100%;height:auto;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.08))}
+.labels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;color:rgba(255,255,255,.42);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Bottle Variations</h1>
+  <p>Each option shows the playable open mouth on the left and the finished closed mouth on the right.</p>
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+const colors=[
+  {f:'#00B4D8',m:'#008fad',d:'#005c70',l:'#4dd4ec',s:'#a8ecf8'},
+  {f:'#FF85A1',m:'#d4607a',d:'#993d55',l:'#ffadc0',s:'#ffd6e0'},
+  {f:'#FFD23F',m:'#e0b520',d:'#997a00',l:'#ffe680',s:'#fff4c2'},
+  {f:'#2DC653',m:'#22a040',d:'#15662a',l:'#5edb7a',s:'#aef0be'}
+];
+const models=[
+  {name:'1. Rounded Classic',tag:'soft shoulders',bw:1,bh:1,bodyR:.22,neckW:.58,mouthW:.65,mouthY:.64,mouthH:3.8,shoulder:.86,taper:.13,cap:'rounded'},
+  {name:'2. Tall Tube',tag:'clean arcade',bw:.84,bh:1.14,bodyR:.13,neckW:.78,mouthW:.74,mouthY:.6,mouthH:3.3,shoulder:.74,taper:.18,cap:'band'},
+  {name:'3. Flask Shoulder',tag:'wide glass',bw:1.16,bh:.96,bodyR:.28,neckW:.46,mouthW:.58,mouthY:.59,mouthH:3.6,shoulder:1.02,taper:.06,cap:'plug'},
+  {name:'4. Beaker Squat',tag:'chunky base',bw:1.2,bh:.82,bodyR:.16,neckW:.54,mouthW:.78,mouthY:.7,mouthH:4.2,shoulder:.92,taper:.04,cap:'stopper'},
+  {name:'5. Slim Soda',tag:'pinched neck',bw:.78,bh:1.08,bodyR:.2,neckW:.38,mouthW:.56,mouthY:.57,mouthH:3.2,shoulder:.86,taper:.2,cap:'crown'}
+];
+
+function rr(ctx,x,y,w,h,r){
+  ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function rrC(ctx,x,y,w,h,tl,tr,br,bl){
+  ctx.moveTo(x+tl,y);ctx.arcTo(x+w,y,x+w,y+h,tr);ctx.arcTo(x+w,y+h,x,y+h,br);ctx.arcTo(x,y+h,x,y,bl);ctx.arcTo(x,y,x+w,y,tl);ctx.closePath();
+}
+function drawBottle(ctx,x,y,w,h,model,closed){
+  const cH=h*.12,bY=y+cH,bH=h-cH,r=w*model.bodyR,pad=4,lw=w-pad*2,lh=(bH-cH*.4-pad*2)/4;
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=13;ctx.shadowOffsetY=8;
+  ctx.fillStyle='rgba(0,0,0,.26)';
+  ctx.beginPath();ctx.ellipse(x+w/2,y+h+8,w*.5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  const bodyGrad=ctx.createLinearGradient(x,bY,x+w,bY+bH);
+  bodyGrad.addColorStop(0,'rgba(210,220,240,.13)');
+  bodyGrad.addColorStop(.22,'rgba(210,220,240,.055)');
+  bodyGrad.addColorStop(.55,'rgba(210,220,240,.025)');
+  bodyGrad.addColorStop(.84,'rgba(210,220,240,.075)');
+  bodyGrad.addColorStop(1,'rgba(210,220,240,.13)');
+  ctx.fillStyle=bodyGrad;
+  ctx.beginPath();rr(ctx,x,bY,w,bH,r);ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();rr(ctx,x+pad,bY+pad,lw,bH-pad*2,Math.max(5,r-4));ctx.clip();
+  for(let j=0;j<4;j++){
+    const c=colors[j],ly=bY+bH-pad-(j+1)*lh;
+    const lg=ctx.createLinearGradient(x+pad,0,x+pad+lw,0);
+    lg.addColorStop(0,c.d);lg.addColorStop(.18,c.m);lg.addColorStop(.45,c.f);lg.addColorStop(.66,c.l);lg.addColorStop(1,c.m);
+    ctx.fillStyle=lg;
+    ctx.beginPath();rrC(ctx,x+pad,ly-.8,lw,lh+1.6,j===3?4:0,j===3?4:0,j===0?Math.max(5,r-4):0,j===0?Math.max(5,r-4):0);ctx.fill();
+    if(j===3){
+      const shine=ctx.createLinearGradient(x+pad,ly,x+pad,ly+lh*.4);
+      shine.addColorStop(0,'rgba(255,255,255,.22)');shine.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=shine;ctx.beginPath();rrC(ctx,x+pad,ly-.8,lw,lh*.36+1.2,4,4,0,0);ctx.fill();
+    }
+  }
+  ctx.restore();
+
+  const hl=ctx.createLinearGradient(x+2,bY,x+w*.2,bY);
+  hl.addColorStop(0,'rgba(255,255,255,.14)');hl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=hl;ctx.beginPath();rrC(ctx,x+3,bY+6,w*.14,bH-12,3,3,3,3);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1.2;ctx.beginPath();rr(ctx,x,bY,w,bH,r);ctx.stroke();
+
+  const mid=x+w/2,mouthW=w*model.mouthW,neckW=mouthW*model.neckW,neckTop=y+cH*model.mouthY,neckBot=bY+6;
+  const neckGrad=ctx.createLinearGradient(mid-neckW/2,neckTop,mid+w*model.shoulder/2,neckBot);
+  neckGrad.addColorStop(0,'rgba(215,225,245,.22)');neckGrad.addColorStop(.5,'rgba(255,255,255,.11)');neckGrad.addColorStop(1,'rgba(150,165,195,.12)');
+  ctx.fillStyle=neckGrad;
+  ctx.beginPath();
+  ctx.moveTo(mid-neckW/2,neckTop);
+  ctx.bezierCurveTo(mid-neckW*.58,neckTop+cH*.34,x+w*model.taper,bY+1,x+w*(model.taper*.75),neckBot);
+  ctx.lineTo(x+w*(1-model.taper*.75),neckBot);
+  ctx.bezierCurveTo(x+w*(1-model.taper),bY+1,mid+neckW*.58,neckTop+cH*.34,mid+neckW/2,neckTop);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(mid-neckW/2,neckTop);ctx.bezierCurveTo(mid-neckW*.58,neckTop+cH*.34,x+w*model.taper,bY+1,x+w*(model.taper*.75),neckBot);
+  ctx.moveTo(mid+neckW/2,neckTop);ctx.bezierCurveTo(mid+neckW*.58,neckTop+cH*.34,x+w*(1-model.taper),bY+1,x+w*(1-model.taper*.75),neckBot);
+  ctx.stroke();
+
+  if(closed){
+    const capY=y+cH*.05,capH=cH*.9;
+    const cg=ctx.createLinearGradient(mid-mouthW/2,capY,mid+mouthW/2,capY+capH);
+    cg.addColorStop(0,'#494b58');cg.addColorStop(.28,'#7a7d8e');cg.addColorStop(.55,'#9ba0b0');cg.addColorStop(1,'#4b4e5e');
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    if(model.cap==='crown'){
+      const teeth=5,step=mouthW/teeth;
+      ctx.moveTo(mid-mouthW/2,capY+capH);
+      for(let i=0;i<=teeth;i++){
+        const px=mid-mouthW/2+i*step;
+        ctx.lineTo(px-step*.5,capY+(i%2?0:capH*.22));
+        ctx.lineTo(px,capY+capH*.2);
+      }
+      ctx.lineTo(mid+mouthW/2,capY+capH);ctx.closePath();
+    } else {
+      rrC(ctx,mid-mouthW/2,capY,mouthW,capH,model.cap==='plug'?2:5,model.cap==='plug'?2:5,2,2);
+    }
+    ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.17)';ctx.beginPath();ctx.ellipse(mid-mouthW*.13,capY+capH*.35,mouthW*.16,1.7,0,0,Math.PI*2);ctx.fill();
+  } else {
+    const rim=ctx.createLinearGradient(mid-mouthW/2,y,mid+mouthW/2,y+cH);
+    rim.addColorStop(0,'#d9dde8');rim.addColorStop(.45,'#ffffff');rim.addColorStop(1,'#8f95a5');
+    ctx.fillStyle=rim;ctx.beginPath();ctx.ellipse(mid,y+cH*model.mouthY,mouthW*.46,model.mouthH,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(8,9,14,.84)';ctx.beginPath();ctx.ellipse(mid,y+cH*(model.mouthY+.02),mouthW*.3,model.mouthH*.55,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(mid,y+cH*model.mouthY,mouthW*.46,model.mouthH,0,0,Math.PI*2);ctx.stroke();
+  }
+}
+function drawCenteredBottle(ctx,cx,baseY,w,h,model,closed){
+  const bw=w*model.bw,bh=h*model.bh;
+  drawBottle(ctx,cx-bw/2,baseY-bh,bw,bh,model,closed);
+}
+function render(){
+  const grid=document.getElementById('grid');
+  models.forEach((model,i)=>{
+    const card=document.createElement('article');
+    card.className='card';
+    card.innerHTML=`<div class="head"><div class="name">${model.name}</div><div class="tag">${model.tag}</div></div><canvas width="320" height="240"></canvas><div class="labels"><span>Open</span><span>Closed</span></div>`;
+    grid.appendChild(card);
+    const canvas=card.querySelector('canvas'),ctx=canvas.getContext('2d');
+    ctx.scale(2,2);
+    const bg=ctx.createLinearGradient(0,0,0,120);
+    bg.addColorStop(0,'rgba(255,255,255,.045)');bg.addColorStop(1,'rgba(0,0,0,.12)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,160,120);
+    drawCenteredBottle(ctx,49,100,32,82,model,false);
+    drawCenteredBottle(ctx,112,100,32,82,model,true);
+  });
+}
+render();
+</script>
+</body>
+</html>

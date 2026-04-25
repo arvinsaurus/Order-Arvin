@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1">
+<title>Order Crazy</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+</head>
+<body>
+<div id="app">
+  <div class="hdr"><h1></h1></div>
+  <div class="obar" id="obar"></div>
+  <div class="stats">
+    <div class="st"><div class="sl">Level</div><div class="sv gd" id="slv">1</div></div>
+    <div class="st"><div class="sl">Moves</div><div class="sv" id="smv">0</div></div>
+    <div class="st"><div class="sl">Best</div><div class="sv cn" id="sbt">-</div></div>
+  </div>
+  <canvas id="gc"></canvas>
+  <div class="ctrls">
+    <button class="btn dis" id="ubtn" onclick="G.undo()">↩ Undo</button>
+    <button class="btn" onclick="G.showLevels()">Levels</button>
+    <button class="btn" onclick="G.restart()">↻ Restart</button>
+  </div>
+  <div class="footnote">made with ❤️ by abang</div>
+  <div class="stg" id="stg" onclick="G.toggleSound()">🔊</div>
+  <div class="intro" id="intro" aria-label="arvin & fam production">
+    <div class="intro-screen">
+      <img class="intro-photo" src="intro-family.png" alt="arvin and fam" onerror="this.remove()">
+      <div class="intro-title">arvin &amp; fam</div>
+      <div class="intro-sub">production</div>
+    </div>
+  </div>
+</div>
+<div id="wc"></div>
+<div id="cc"></div>
+
+<script src="game.js" defer></script>
+</body>
+</html>
