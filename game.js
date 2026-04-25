@@ -270,7 +270,10 @@ const G={
 
   init(){
     this.loadProgress();this.restart();this.resize();
-    window.addEventListener('resize',()=>this.resize());
+    // Load persisted sound preference
+    try{const s=localStorage.getItem('orderArvinSfx');if(s!==null){SFX.on=s==='1';document.getElementById('stg').textContent=SFX.on?'🔊':'🔇'}}catch(_){}
+    // Debounced resize
+    let _rt;window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>this.resize(),100)});
     cv.addEventListener('pointerdown',e=>this.tap(e),{passive:true});
     cv.addEventListener('pointermove',e=>this.trackPointer(e),{passive:true});
     cv.addEventListener('pointerleave',()=>{this.hover=-1},{passive:true});
@@ -380,6 +383,7 @@ const G={
 
     this.hist.push({bots:this.bots.map(b=>b?[...b]:null),doneC:[...this.doneC],pendingC:{...this.pendingC}});
     this.sel=null;this.busy=true;this.pouringFrom=fi;
+    if(navigator.vibrate) navigator.vibrate(10);
 
     const dir=tr.x>=fr.x?1:-1;
     const finalRot=dir*1.02;
@@ -512,21 +516,18 @@ const G={
     if(!this.hist.length||this.busy||this.won)return;
     tweens.length=0;
     const snap=this.hist.pop();
-    if(Array.isArray(snap)){
-      this.bots=snap;
-      this.pendingC={};
-      this.doneC=new Set();
-      for(const b of this.bots) if(b&&this.isSrt(b)&&b.length>0) this.doneC.add(b[0]);
-    } else {
-      this.bots=snap.bots;
-      this.doneC=new Set(snap.doneC);
-      this.pendingC=snap.pendingC??{};
-    }
+    this.bots=snap.bots;
+    this.doneC=new Set(snap.doneC);
+    this.pendingC=snap.pendingC??{};
     this.mv--;this.sel=null;this.pouringFrom=null;
     this.layout();this.ui();
   },
 
-  toggleSound(){SFX.init();SFX.on=!SFX.on;document.getElementById('stg').textContent=SFX.on?'🔊':'🔇'},
+  toggleSound(){
+    SFX.init();SFX.on=!SFX.on;
+    document.getElementById('stg').textContent=SFX.on?'🔊':'🔇';
+    try{localStorage.setItem('orderArvinSfx',SFX.on?'1':'0')}catch(_){}
+  },
 
   // ── Particles ──
   spawnParticles(x,y,color,n){
@@ -1094,6 +1095,7 @@ const G={
   },
   showLevels(){
     if(this.busy)return;
+    document.body.style.overflow='hidden';
     const max=this.maxLv,locked=max+1;
     const tiles=[];
     for(let i=1;i<=max;i++){
@@ -1101,7 +1103,7 @@ const G={
       tiles.push(`<button class="${cls}" onclick="G.selectLevel(${i})">${i}</button>`);
     }
     tiles.push(`<button class="ltile lock" aria-label="Level ${locked} locked">🔒</button>`);
-    document.getElementById('wc').innerHTML=`<div class="lov"><h2>Levels</h2><p>One locked level appears after your latest unlock.</p><div class="lgrid">${tiles.join('')}</div><button class="btn" onclick="G.hideWin()">Close</button></div>`;
+    document.getElementById('wc').innerHTML=`<div class="lov" role="dialog" aria-modal="true"><h2>Levels</h2><p>One locked level appears after your latest unlock.</p><div class="lgrid">${tiles.join('')}</div><button class="btn" onclick="G.hideWin()">Close</button></div>`;
     requestAnimationFrame(()=>{const cur=document.querySelector('.ltile.cur');if(cur)cur.scrollIntoView({block:'center',behavior:'smooth'})});
   },
   // Debug tool — tap level number 5× fast to trigger
@@ -1115,7 +1117,7 @@ const G={
       const pw=prompt('🔐 Debug password:');
       if(pw!=='kirana')return;
       const raw=prompt(`Jump to level (current: ${this.lv}):`);
-      const lv=parseInt(raw);
+      const lv=Math.min(Math.max(1,parseInt(raw)||1),999);
       if(!lv||lv<1)return;
       this.lv=lv;
       this.maxLv=Math.max(this.maxLv,lv);
@@ -1173,11 +1175,12 @@ const G={
   },
   showWin(){
     const b=this.best[this.lv];if(!b||this.mv<b)this.best[this.lv]=this.mv;this.maxLv=Math.max(this.maxLv,this.lv+1);this.saveProgress();this.ui();
-    document.getElementById('wc').innerHTML=`<div class="wov"><h2>🎉 Level ${this.lv} Done!</h2><p>${this.mv} moves${this.best[this.lv]===this.mv?' — New best!':''}</p><div style="display:flex;gap:10px"><button class="btn" onclick="G.restart()">↻ Replay</button><button class="btn pri" onclick="G.next();G.hideWin()">Level ${this.lv+1} →</button></div></div>`;
+    document.body.style.overflow='hidden';
+    document.getElementById('wc').innerHTML=`<div class="wov" role="dialog" aria-modal="true"><h2>🎉 Level ${this.lv} Done!</h2><p>${this.mv} moves${this.best[this.lv]===this.mv?' — New best!':''}</p><div style="display:flex;gap:10px"><button class="btn" onclick="G.restart()">↻ Replay</button><button class="btn pri" onclick="G.next();G.hideWin()">Level ${this.lv+1} →</button></div></div>`;
     const ct=document.getElementById('cc');
     for(let i=0;i<30;i++){const el=document.createElement('div');el.className='cfp';const sz=5+Math.random()*8;el.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${C[i%C.length].f};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.3+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s`;ct.appendChild(el)}
   },
-  hideWin(){document.getElementById('wc').innerHTML='';document.getElementById('cc').innerHTML=''},
+  hideWin(){document.getElementById('wc').innerHTML='';document.getElementById('cc').innerHTML='';document.body.style.overflow=''},
 
   loop(t){
     const dt=Math.min((t-this._lt)/1000,.033);this._lt=t;
