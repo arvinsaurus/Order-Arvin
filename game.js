@@ -95,13 +95,21 @@ document.addEventListener('pointerdown',e=>{
 window.addEventListener('load',()=>{
   const intro=document.getElementById('intro');
   if(!intro)return;
+  const photo=intro.querySelector('.intro-photo');
+  const title=intro.querySelector('.intro-title');
+  const sub=intro.querySelector('.intro-sub');
+  requestAnimationFrame(()=>{
+    if(photo)photo.classList.add('visible');
+    if(title)title.classList.add('visible');
+    if(sub)sub.classList.add('visible');
+  });
   setTimeout(()=>{
     intro.classList.add('out');
-    intro.addEventListener('animationend',()=>{
+    setTimeout(()=>{
       intro.remove();
       G.startLoop();
-    },{once:true});
-  },1850);
+    },500);
+  },2000);
 });
 
 // ═══════════════════════════════
