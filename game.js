@@ -97,7 +97,10 @@ window.addEventListener('load',()=>{
   if(!intro)return;
   setTimeout(()=>{
     intro.classList.add('out');
-    intro.addEventListener('animationend',()=>intro.remove(),{once:true});
+    intro.addEventListener('animationend',()=>{
+      intro.remove();
+      G.startLoop();
+    },{once:true});
   },1850);
 });
 
@@ -254,6 +257,14 @@ const G={
     cv.addEventListener('pointerdown',e=>this.tap(e),{passive:true});
     cv.addEventListener('pointermove',e=>this.trackPointer(e),{passive:true});
     cv.addEventListener('pointerleave',()=>{this.hover=-1},{passive:true});
+    this._lt=performance.now();
+    this._paused=!!document.getElementById('intro');
+    if(!this._paused) requestAnimationFrame(t=>this.loop(t));
+  },
+
+  startLoop(){
+    if(!this._paused)return;
+    this._paused=false;
     this._lt=performance.now();
     requestAnimationFrame(t=>this.loop(t));
   },
