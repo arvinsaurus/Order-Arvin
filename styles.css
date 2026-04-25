@@ -66,13 +66,13 @@ html,body{height:100%;overflow:hidden;background:radial-gradient(circle at 20% 0
 .ltile.lock:hover{transform:none;border-color:rgba(255,255,255,.1)}
 .cfp{position:fixed;top:-20px;pointer-events:none;z-index:100;animation:cf linear forwards}
 .stg{position:absolute;top:8px;right:10px;z-index:20;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;user-select:none;box-shadow:0 8px 18px rgba(0,0,0,.15)}
-.intro{position:absolute;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:#f5f0d8;color:#1d2230;animation:introHold 2.15s steps(1,end) forwards}
+.intro{position:absolute;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:#f5f0d8;color:#1d2230;animation:introHold 2.15s ease forwards;will-change:opacity}
 .intro::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 4px);opacity:.26;pointer-events:none}
-.intro-screen{width:min(86%,310px);padding:0 16px;text-align:center;animation:introPop .42s steps(5,end) both}
+.intro-screen{width:min(86%,310px);padding:0 16px;text-align:center;animation:introPop .42s cubic-bezier(0.34,1.56,0.64,1) both;will-change:transform,opacity}
 .intro-photo{display:block;width:min(84vw,260px);max-height:52vh;object-fit:contain;margin:0 auto 14px;filter:drop-shadow(0 8px 0 rgba(39,48,68,.16))}
 .intro-title{font-family:'Comic Sans MS','Comic Sans',cursive;font-size:26px;font-weight:700;line-height:1;text-transform:lowercase;letter-spacing:0;text-shadow:2px 2px 0 rgba(107,127,88,.24)}
 .intro-sub{margin-top:6px;font-family:'Comic Sans MS','Comic Sans',cursive;font-size:15px;font-weight:700;letter-spacing:0;text-transform:lowercase;color:#536247}
-.intro.out{pointer-events:none;animation:introOut .38s steps(5,end) forwards}
+.intro.out{pointer-events:none;animation:introOut .38s ease-in forwards}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes pb{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes cf{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
