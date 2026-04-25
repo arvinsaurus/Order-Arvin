@@ -55,11 +55,11 @@ html,body{height:100%;overflow:hidden;background:radial-gradient(circle at 20% 0
 .wov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,8,15,.92);backdrop-filter:blur(10px);z-index:50;animation:fi .4s ease}
 .wov h2{font-family:'Fredoka',sans-serif;font-size:28px;color:#ffd23f;animation:pb .5s ease}
 .wov p{font-size:12px;color:rgba(255,255,255,.4);margin:5px 0 16px}
-.lov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:rgba(8,8,15,.92);backdrop-filter:blur(10px);z-index:50;animation:fi .25s ease}
-.lov h2{font-family:'Fredoka',sans-serif;font-size:28px;color:#ffd23f;margin-bottom:4px}
-.lov p{font-size:12px;color:rgba(255,255,255,.42);margin-bottom:18px}
-.lgrid{display:grid;grid-template-columns:repeat(4,58px);gap:10px;max-width:272px;justify-content:center;margin-bottom:18px}
-.ltile{width:58px;height:58px;border-radius:8px;border:1px solid rgba(255,255,255,.16);border-bottom-color:rgba(0,0,0,.58);background:linear-gradient(180deg,#454965,#202235 58%,#11121e);color:#fff;font-family:'Fredoka','Outfit',sans-serif;font-weight:900;font-size:18px;cursor:pointer;text-shadow:0 2px 0 #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.16),inset -3px -4px 0 rgba(0,0,0,.32),0 4px 0 #050509,0 9px 18px rgba(0,0,0,.3);transition:transform .12s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.lov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:28px 20px 20px;background:rgba(8,8,15,.92);backdrop-filter:blur(10px);z-index:50;animation:fi .25s ease;overflow-y:auto}
+.lov h2{font-family:'Fredoka',sans-serif;font-size:28px;color:#ffd23f;margin-bottom:4px;flex-shrink:0}
+.lov p{font-size:12px;color:rgba(255,255,255,.42);margin-bottom:16px;flex-shrink:0}
+.lgrid{display:grid;grid-template-columns:repeat(5,52px);gap:8px;justify-content:center;margin-bottom:20px;width:100%}
+.ltile{width:52px;height:52px;border-radius:8px;border:1px solid rgba(255,255,255,.16);border-bottom-color:rgba(0,0,0,.58);background:linear-gradient(180deg,#454965,#202235 58%,#11121e);color:#fff;font-family:'Fredoka','Outfit',sans-serif;font-weight:900;font-size:16px;cursor:pointer;text-shadow:0 2px 0 #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.16),inset -3px -4px 0 rgba(0,0,0,.32),0 4px 0 #050509,0 9px 18px rgba(0,0,0,.3);transition:transform .12s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
 .ltile:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.28)}
 .ltile.cur{border-color:rgba(255,210,63,.85);background:linear-gradient(180deg,#fff0a6,#ffba31 48%,#b94818);color:#271104;text-shadow:0 1px 0 rgba(255,255,255,.5)}
 .ltile.done{border-color:rgba(78,205,196,.35)}

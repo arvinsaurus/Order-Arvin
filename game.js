@@ -1102,6 +1102,7 @@ const G={
     }
     tiles.push(`<button class="ltile lock" aria-label="Level ${locked} locked">🔒</button>`);
     document.getElementById('wc').innerHTML=`<div class="lov"><h2>Levels</h2><p>One locked level appears after your latest unlock.</p><div class="lgrid">${tiles.join('')}</div><button class="btn" onclick="G.hideWin()">Close</button></div>`;
+    requestAnimationFrame(()=>{const cur=document.querySelector('.ltile.cur');if(cur)cur.scrollIntoView({block:'center',behavior:'smooth'})});
   },
   // Debug tool — tap level number 5× fast to trigger
   _dbgTaps:0, _dbgTimer:null,
