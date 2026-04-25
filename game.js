@@ -148,22 +148,35 @@ const G={
   particles:[], ripples:[], hover:-1,
 
   getCfg(lv){
-    const nc=Math.min(8+Math.floor((lv-1)/3),C.length); // start at 8 colors (10 bottles), +1 every 3 levels
-    const ne=2; // always 2 empty bottles for breathing room
-    const nb=nc+ne;
-    const cols=nb<=10?5:nb<=12?5:6;
-    return{nb,nc,ne,cols};
+    // Multiplier: how many full bottles each color occupies (1 = 1 bottle, 2 = 2 bottles)
+    // Phase 1 (1–10):  8→12 colors, 1× multiplier, 2 empties → 10–14 bottles
+    // Phase 2 (11–25): 10→12 colors, 2× multiplier, 2 empties → 22–26 bottles
+    // Phase 3 (26+):   12 colors,    2× multiplier, 1 empty  → 25 bottles (brutal)
+    let nc,mul,ne;
+    if(lv<=10){
+      nc=Math.min(8+Math.floor((lv-1)/2),12);
+      mul=1; ne=2;
+    } else if(lv<=25){
+      nc=Math.min(10+Math.floor((lv-11)/5),12);
+      mul=2; ne=2;
+    } else {
+      nc=12; mul=2; ne=1;
+    }
+    const nb=nc*mul+ne;
+    const cols=nb<=12?5:nb<=16?5:nb<=20?5:6;
+    return{nb,nc,ne,mul,cols};
   },
 
   gen(lv){
     const cfg=this.getCfg(lv);
-    // Build pool: each color gets exactly CAP layers → every non-empty bottle will be full
+    // Each color gets CAP*mul layers total → mul full bottles per color
     const pool=[];
-    for(let i=0;i<cfg.nc;i++) for(let j=0;j<CAP;j++) pool.push(i);
+    for(let i=0;i<cfg.nc;i++) for(let j=0;j<CAP*cfg.mul;j++) pool.push(i);
     for(let i=pool.length-1;i>0;i--){const j=0|Math.random()*(i+1);[pool[i],pool[j]]=[pool[j],pool[i]]}
-    // Fill nc bottles with exactly CAP layers each, then add ne empty bottles
+    // Fill nc*mul bottles with exactly CAP layers each, then add ne empty bottles
+    const totalFull=cfg.nc*cfg.mul;
     const b=[];
-    for(let i=0;i<cfg.nc;i++) b.push(pool.splice(0,CAP));
+    for(let i=0;i<totalFull;i++) b.push(pool.splice(0,CAP));
     for(let i=0;i<cfg.ne;i++) b.push([]);
     // Break up any pre-sorted bottles
     for(let i=0;i<b.length;i++){
@@ -184,10 +197,7 @@ const G={
     if(!hasMove()){
       const full=b.map((bot,i)=>bot.length===CAP?i:-1).filter(i=>i>=0);
       const empty=b.map((bot,i)=>bot.length<CAP?i:-1).filter(i=>i>=0);
-      if(full.length&&empty.length){
-        const fi=full[0],ei=empty[0];
-        b[ei].push(b[fi].pop());
-      }
+      if(full.length&&empty.length){b[empty[0]].push(b[full[0]].pop())}
     }
     for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]]}
     this.orders=[];for(let i=0;i<cfg.nc;i++) this.orders.push(i);
@@ -1089,6 +1099,25 @@ const G={
     }
     tiles.push(`<button class="ltile lock" aria-label="Level ${locked} locked">🔒</button>`);
     document.getElementById('wc').innerHTML=`<div class="lov"><h2>Levels</h2><p>One locked level appears after your latest unlock.</p><div class="lgrid">${tiles.join('')}</div><button class="btn" onclick="G.hideWin()">Close</button></div>`;
+  },
+  // Debug tool — tap level number 5× fast to trigger
+  _dbgTaps:0, _dbgTimer:null,
+  debugTap(){
+    this._dbgTaps++;
+    clearTimeout(this._dbgTimer);
+    this._dbgTimer=setTimeout(()=>{this._dbgTaps=0},600);
+    if(this._dbgTaps>=5){
+      this._dbgTaps=0;
+      const pw=prompt('🔐 Debug password:');
+      if(pw!=='kirana')return;
+      const raw=prompt(`Jump to level (current: ${this.lv}):`);
+      const lv=parseInt(raw);
+      if(!lv||lv<1)return;
+      this.lv=lv;
+      this.maxLv=Math.max(this.maxLv,lv);
+      this.saveProgress();
+      this.restart();
+    }
   },
   selectLevel(lv){
     if(lv<1||lv>this.maxLv||this.busy)return;
