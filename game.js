@@ -148,10 +148,10 @@ const G={
   particles:[], ripples:[], hover:-1,
 
   getCfg(lv){
-    const nc=Math.min(4+Math.floor((lv-1)/2),C.length); // start at 4 colors, +1 every 2 levels
+    const nc=Math.min(8+Math.floor((lv-1)/3),C.length); // start at 8 colors (10 bottles), +1 every 3 levels
     const ne=2; // always 2 empty bottles for breathing room
     const nb=nc+ne;
-    const cols=nb<=6?3:nb<=9?4:5;
+    const cols=nb<=10?5:nb<=12?5:6;
     return{nb,nc,ne,cols};
   },
 
