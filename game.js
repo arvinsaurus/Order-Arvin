@@ -148,20 +148,24 @@ const G={
   particles:[], ripples:[], hover:-1,
 
   getCfg(lv){
-    const nc=Math.min(10+Math.floor((lv-1)/4),C.length);
-    const nb=20;
-    return{nb,nc,ne:0,cols:5};
+    const nc=Math.min(4+Math.floor((lv-1)/2),C.length); // start at 4 colors, +1 every 2 levels
+    const ne=2; // always 2 empty bottles for breathing room
+    const nb=nc+ne;
+    const cols=nb<=6?3:nb<=9?4:5;
+    return{nb,nc,ne,cols};
   },
 
   gen(lv){
     const cfg=this.getCfg(lv);
+    // Build pool: each color gets exactly CAP layers → every non-empty bottle will be full
     const pool=[];
     for(let i=0;i<cfg.nc;i++) for(let j=0;j<CAP;j++) pool.push(i);
     for(let i=pool.length-1;i>0;i--){const j=0|Math.random()*(i+1);[pool[i],pool[j]]=[pool[j],pool[i]]}
-    const total=pool.length,base=Math.floor(total/cfg.nb),extra=total%cfg.nb;
-    const sizes=Array.from({length:cfg.nb},(_,i)=>base+(i<extra?1:0));
-    for(let i=sizes.length-1;i>0;i--){const j=0|Math.random()*(i+1);[sizes[i],sizes[j]]=[sizes[j],sizes[i]]}
-    const b=sizes.map(sz=>pool.splice(0,sz));
+    // Fill nc bottles with exactly CAP layers each, then add ne empty bottles
+    const b=[];
+    for(let i=0;i<cfg.nc;i++) b.push(pool.splice(0,CAP));
+    for(let i=0;i<cfg.ne;i++) b.push([]);
+    // Break up any pre-sorted bottles
     for(let i=0;i<b.length;i++){
       if(this.isSrt(b[i])){
         const j=b.findIndex((bot,k)=>k!==i&&bot.length>1&&bot.some(c=>c!==b[i][0]));
@@ -171,26 +175,18 @@ const G={
         }
       }
     }
+    // Guarantee at least one valid move exists
     const hasMove=()=>b.some((from,i)=>{
       if(!from.length)return false;
       const c=from[from.length-1];
-      return b.some((to,j)=>i!==j&&to.length<CAP&&to.length&&to[to.length-1]===c);
+      return b.some((to,j)=>i!==j&&to.length<CAP&&(!to.length||to[to.length-1]===c));
     });
     if(!hasMove()){
-      const open=b.map((bot,i)=>bot.length<CAP?i:-1).filter(i=>i>=0);
-      const i=open[0],j=open.find(k=>k!==i);
-      if(i!==undefined&&j!==undefined){
-        const c=b[i][b[i].length-1];
-        outer:for(let k=0;k<b.length;k++){
-          if(k===i||k===j)continue;
-          for(let p=0;p<b[k].length;p++){
-            if(b[k][p]===c){
-              const last=b[j].length-1;
-              [b[j][last],b[k][p]]=[b[k][p],b[j][last]];
-              break outer;
-            }
-          }
-        }
+      const full=b.map((bot,i)=>bot.length===CAP?i:-1).filter(i=>i>=0);
+      const empty=b.map((bot,i)=>bot.length<CAP?i:-1).filter(i=>i>=0);
+      if(full.length&&empty.length){
+        const fi=full[0],ei=empty[0];
+        b[ei].push(b[fi].pop());
       }
     }
     for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]]}
