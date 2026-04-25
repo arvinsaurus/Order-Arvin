@@ -46,7 +46,7 @@ html,body{height:100%;overflow:hidden;background:radial-gradient(circle at 20% 0
 .gc-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
 #gc{flex:1;display:block;width:100%;min-height:0;cursor:pointer}
 .ctrls{display:flex;gap:8px;justify-content:center;padding:6px 16px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));flex-shrink:0;z-index:10}
-.footnote{flex-shrink:0;padding:0 16px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.34);letter-spacing:.2px}
+.footnote{flex-shrink:0;padding:0 16px 10px;padding-bottom:max(40px,env(safe-area-inset-bottom));text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.34);letter-spacing:.2px}
 .btn{padding:9px 17px;border-radius:8px;border:1px solid rgba(255,255,255,.16);border-bottom-color:rgba(0,0,0,.62);background:linear-gradient(180deg,#fff2a8 0%,#ffca3a 42%,#d96c1e 100%);color:#24110a;cursor:pointer;font-family:'Fredoka','Outfit',sans-serif;font-size:12px;font-weight:800;user-select:none;transition:transform .12s ease,filter .16s ease,box-shadow .16s ease;text-shadow:0 1px 0 rgba(255,255,255,.5);box-shadow:inset 2px 2px 0 rgba(255,255,255,.55),inset -2px -4px 0 rgba(119,45,6,.34),0 4px 0 #6e2d08,0 8px 16px rgba(0,0,0,.34)}
 .btn:hover{filter:saturate(1.12) brightness(1.05);box-shadow:inset 2px 2px 0 rgba(255,255,255,.6),inset -2px -4px 0 rgba(119,45,6,.32),0 4px 0 #6e2d08,0 0 18px rgba(255,210,63,.18),0 8px 16px rgba(0,0,0,.34)}
 .btn:active{transform:translateY(3px);box-shadow:inset 1px 1px 0 rgba(255,255,255,.45),inset -2px -3px 0 rgba(119,45,6,.32),0 1px 0 #6e2d08,0 4px 10px rgba(0,0,0,.28)}
