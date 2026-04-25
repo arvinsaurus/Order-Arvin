@@ -210,10 +210,14 @@ const G={
     const cfg=this.getCfg(this.lv);
     const n=this.bots.length;if(!n)return;
     const cols=cfg.cols,rows=Math.ceil(n/cols);
-    const mxW=(this.cw-18)/cols-8, mxH=(this.ch-14)/rows-12;
+    const topPad=20,botPad=20;
+    const mxW=(this.cw-18)/cols-8, mxH=(this.ch-topPad-botPad)/rows-12;
     this.BW=Math.min(40,mxW);this.BH=Math.min(92,mxH,this.BW*2.45);
     this.capH=this.BH*.12;this.lH=(this.BH-this.capH-8)/CAP;
     const gx=this.BW*.64, gy=this.BH*.22;
+    // More scatter when fewer bottles, tighter when packed
+    const sx=n<=12?.7:n<=18?.45:.28;
+    const sy2=n<=12?.35:n<=18?.24:.15;
     this.rects=[];
     const rand=n=>{const s=Math.sin((n+1)*127.1+this.lv*311.7)*43758.5453;return s-Math.floor(s)};
     for(let i=0;i<n;i++){
@@ -221,14 +225,13 @@ const G={
       const rc=row===rows-1?n-row*cols:cols;
       const rw=rc*this.BW+(rc-1)*gx;
       const th=rows*this.BH+(rows-1)*gy;
-      const sy=(this.ch-th)/2;
+      const startY=topPad+(this.ch-topPad-botPad-th)/2;
       const stagger=(row%2?.34:-.2)*this.BW;
-      const jx=(rand(i*2)-.5)*this.BW*.36+stagger;
-      const jy=(rand(i*2+1)-.5)*this.BH*.18+(col%2?this.BH*.06:0);
+      const jx=(rand(i*2)-.5)*this.BW*sx+stagger;
+      const jy=(rand(i*2+1)-.5)*this.BH*sy2+(col%2?this.BH*.06:0);
       const x=Math.max(10,Math.min(this.cw-this.BW-12,(this.cw-rw)/2+col*(this.BW+gx)+jx));
-      const y=Math.max(6,Math.min(this.ch-this.BH-14,sy+row*(this.BH+gy)+jy));
+      const y=Math.max(topPad,Math.min(this.ch-this.BH-botPad,startY+row*(this.BH+gy)+jy));
       this.rects.push({x,y, w:this.BW, h:this.BH, idx:i,
-        // Anim state per bottle
         offX:0, offY:0, rot:0, scl:1, alpha:1});
     }
   },
